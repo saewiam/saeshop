@@ -1,0 +1,52 @@
+---
+const response = await fetch(
+    'http://payload:3000/api/globals/nav?depth=0&draft=false&trash=false'
+)
+const data: any = await response.json()
+const links = data.links.map((link: any) => {
+    return {
+        title: link.title,
+        url: link.url,
+        sublinks: link.sublinks.map((sublink: any) => {
+            return {
+                title: sublink.title,
+                url: sublink.url,
+            }
+        }),
+    }
+})
+---
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>Astro</title>
+    </head>
+    <body>
+        <h1>Astro</h1>
+        <nav>
+            <ul>
+                {
+                    links.map((link: any) => (
+                        <li>
+                            <a href={link.url}>{link.title}</a>
+                            <ul>
+                                {link.sublinks.map((sublink: any) => (
+                                    <li>
+                                        <a href={sublink.url}>
+                                            {sublink.title}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    ))
+                }
+            </ul>
+        </nav>
+    </body>
+</html>

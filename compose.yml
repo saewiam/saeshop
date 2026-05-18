@@ -1,0 +1,45 @@
+services:
+  payload:
+    image: node:24-alpine
+    ports:
+      - '3000:3000'
+    volumes:
+      - payload_build:/home/node/app/.next
+      - ./payload:/home/node/app
+      - payload_modules:/home/node/app/node_modules
+    working_dir: /home/node/app/
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - mongo
+    environment:
+      DATABASE_URL: mongodb://mongo/payload
+      HOSTNAME: "0.0.0.0"
+      PAYLOAD_SECRET: development
+    healthcheck: 
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 20s
+      start_interval: 1s
+  mongo:
+    image: mongo:latest
+    restart: always
+    volumes:
+      - ./mongo-data:/data/db
+  astro:
+    image: node:24-alpine
+    ports:
+      - '4321:4321'
+    volumes:
+      - ./astro:/home/node/app
+      - astro_modules:/home/node/app/node_modules
+    working_dir: /home/node/app/
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      payload:
+        condition: service_healthy
+volumes:
+  astro_modules:
+  payload_modules:
+  payload_build:
