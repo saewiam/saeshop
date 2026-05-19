@@ -1,45 +1,73 @@
 services:
-  payload:
-    image: node:24-alpine
-    ports:
-      - '3000:3000'
+  cms:
+    build:
+      context: ./cms
+      target: files
+      additional_contexts:
+        payload: ./payload
     volumes:
-      - payload_build:/home/node/app/.next
-      - ./payload:/home/node/app
-      - payload_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
+      - static-files:/app/static
+      - cms_build:/app/.next
+      - cms_modules:/app/node_modules
+      - ./payload/src:/app/node_modules/@saewiam/saeshop-payload/src
     command: sh -c "npm install && npm run dev"
     depends_on:
-      - mongo
+      postgres:
+        condition: service_started
+        restart: true
+    env_file: "./cms/development.env"
     environment:
-      DATABASE_URL: mongodb://mongo/payload
       HOSTNAME: "0.0.0.0"
-      PAYLOAD_SECRET: development
-    healthcheck: 
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 2
-      start_period: 20s
-      start_interval: 1s
-  mongo:
-    image: mongo:latest
-    restart: always
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-payload_development_secret}
+  frontend:
+    build:
+      context: ./frontend
+      target: files
+      additional_contexts:
+        payload: ./payload
+    command: sh -c "npm run dev -- --host --port 80"
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app/frontend
+          initial_sync: true
+        - action: rebuild
+          path: ./frontend/package.json
     volumes:
-      - ./mongo-data:/data/db
-  astro:
-    image: node:24-alpine
-    ports:
-      - '4321:4321'
-    volumes:
-      - ./astro:/home/node/app
-      - astro_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
+      - astro_modules:/app/node_modules
+      - ./payload/src:/app/node_modules/@saewiam/saeshop-payload/src
     command: sh -c "npm install && npm run dev -- --host"
     depends_on:
       payload:
         condition: service_healthy
+  postgres:
+    image: postgres:18-alpine
+    shm_size: 128mb
+    restart: always
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    env_file: "./postgres/development.env"
+    environment:
+      - POSTGRES_USER=${DB_ROOTUSER:-postgres}
+      - POSTGRES_PASSWORD=${DB_ROOTUSER:-password}
+  s3:
+    image: scireum/s3-ninja
+    volumes:
+      - s3_data:/home/sirius/data
+  caddy:
+    image: caddy:latest
+    ports: '80:80'
+    configs:
+      - source: caddy
+        target: /etc/caddy/Caddyfile
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./Caddyfile
+          target: /etc/caddy/Caddyfile
 volumes:
   astro_modules:
-  payload_modules:
-  payload_build:
+  cms_modules:
+  cms_build:
