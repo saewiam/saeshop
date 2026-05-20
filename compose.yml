@@ -26,7 +26,7 @@ services:
           path: ./cms/package.json
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
         restart: true
     env_file: "./payload/development.env"
     environment:
@@ -72,6 +72,13 @@ services:
     environment:
       - POSTGRES_USER=${DB_ROOTUSER:-postgres}
       - POSTGRES_PASSWORD=${DB_ROOTUSER:-password}
+    healthcheck:
+      test: sh -c "pg_isready -U ${PAYLOAD_PGUSER:?need payload user} -d ${PAYLOAD_PGDATABASE:?need payload database}"
+      interval: 10s
+      timeout: 3s
+      retries: 2
+      start_interval: 0.5s
+      start_period: 15s
   caddy:
     image: caddy:latest
     ports:
