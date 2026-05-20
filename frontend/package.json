@@ -12,6 +12,8 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.5.2",
+    "@saewiam/saeshop-payload": "file:../payload",
     "astro": "^6.1.10"
   },
   "devDependencies": {

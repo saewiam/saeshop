@@ -1,14 +1,10 @@
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
-import { Users } from './collections/Users'
-import { Media } from './collections/Media'
-import { Pages } from './collections/Pages'
-import { Nav } from './globals/Nav'
-import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
+import Collections from './collections/index'
+import Globals from './globals/index'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -18,49 +14,38 @@ export default buildConfig({
         admin: '/',
     },
     admin: {
-        user: Users.slug,
-        importMap: {
-            baseDir: path.resolve(dirname),
-        },
-        autoLogin: {
-            username: 'admin',
-            password: 'admin',
-        },
+        autoLogin: process.env.PAYLOAD_AUTOLOGIN
+            ? {
+                  email: 'admin@example.com',
+                  password: 'admin',
+              }
+            : undefined,
     },
-    collections: [Users, Media, Pages],
-    globals: [Nav],
-    editor: lexicalEditor(),
+    collections: Collections,
+    globals: Globals,
     secret: process.env.PAYLOAD_SECRET || '',
     typescript: {
         outputFile: path.resolve(dirname, 'payload-types.ts'),
     },
-    db: mongooseAdapter({
-        url: process.env.DATABASE_URL || '',
+    db: postgresAdapter({
+        pool: {
+            user: process.env.PAYLOAD_PGUSER,
+            password: process.env.PAYLOAD_PGPASSWORD,
+            host: process.env.PAYLOAD_PGHOST,
+            port: parseInt(process.env.PAYLOAD_PGPORT || '5432'),
+            database: process.env.PAYLOAD_PGDATABASE,
+        },
     }),
     onInit: async (payload) => {
-        payload.create({
-            collection: 'users',
-            data: {
-                username: 'admin',
-                password: 'admin',
-            },
-        })
+        if ((await payload.count({ collection: 'users' })).totalDocs === 0) {
+            payload.create({
+                collection: 'users',
+                data: {
+                    username: 'admin',
+                    password: 'admin',
+                },
+            })
+        }
     },
-    endpoints: [
-        {
-            path: '/health',
-            method: 'get',
-            handler: async () => {
-                return new Response('OK', { status: 200 })
-            },
-        },
-    ],
-    plugins: [
-        nestedDocsPlugin({
-            collections: ['pages'],
-            generateLabel: (_, doc) => String(doc.title),
-            generateURL: (docs) =>
-                docs.reduce((url, doc) => `${url}/${String(doc.slug)}`, ''),
-        }),
-    ],
+    plugins: [],
 })

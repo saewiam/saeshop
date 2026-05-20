@@ -1,0 +1,14 @@
+{
+    auto_https off
+}
+
+http://saeshop.localhost {
+    reverse_proxy frontend:80
+}
+http://admin.saeshop.localhost {
+    reverse_proxy cms:3000
+}
+http://static.saeshop.localhost {
+    root /srv/static
+    file_server
+}

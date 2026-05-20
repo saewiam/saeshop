@@ -3,19 +3,32 @@ services:
     build:
       context: ./cms
       target: files
+      args:
+        NODE_ENV: development
       additional_contexts:
         payload: ./payload
     volumes:
-      - static-files:/app/static
+      - static:/app/static
       - cms_build:/app/.next
       - cms_modules:/app/node_modules
-      - ./payload/src:/app/node_modules/@saewiam/saeshop-payload/src
-    command: sh -c "npm install && npm run dev"
+    command: sh -c "npm run dev"
+    develop:
+      watch:
+        - action: sync
+          path: ./cms
+          target: /app
+          initial_sync: true
+        - action: sync
+          path: ./payload
+          target: /app/node_modules/@saewiam/saeshop-payload
+          initial_sync: true
+        - action: rebuild
+          path: ./cms/package.json
     depends_on:
       postgres:
         condition: service_started
         restart: true
-    env_file: "./cms/development.env"
+    env_file: "./payload/development.env"
     environment:
       HOSTNAME: "0.0.0.0"
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-payload_development_secret}
@@ -23,45 +36,51 @@ services:
     build:
       context: ./frontend
       target: files
+      args:
+        NODE_ENV: development
       additional_contexts:
         payload: ./payload
-    command: sh -c "npm run dev -- --host --port 80"
     develop:
       watch:
         - action: sync
           path: ./frontend
-          target: /app/frontend
+          target: /app
+          initial_sync: true
+        - action: sync
+          path: ./payload
+          target: /app/node_modules/@saewiam/saeshop-payload
           initial_sync: true
         - action: rebuild
           path: ./frontend/package.json
     volumes:
       - astro_modules:/app/node_modules
-      - ./payload/src:/app/node_modules/@saewiam/saeshop-payload/src
-    command: sh -c "npm install && npm run dev -- --host"
+    command: sh -c "npm run dev -- --host --port 80"
+    env_file: "./payload/development.env"
     depends_on:
-      payload:
-        condition: service_healthy
+      cms:
+        condition: service_started
   postgres:
     image: postgres:18-alpine
     shm_size: 128mb
     restart: always
     volumes:
-      - postgres-data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql
       - ./postgres/init:/docker-entrypoint-initdb.d
-    env_file: "./postgres/development.env"
+    env_file:
+      - "./postgres/development.env"
+      - "./payload/development.env"
     environment:
       - POSTGRES_USER=${DB_ROOTUSER:-postgres}
       - POSTGRES_PASSWORD=${DB_ROOTUSER:-password}
-  s3:
-    image: scireum/s3-ninja
-    volumes:
-      - s3_data:/home/sirius/data
   caddy:
     image: caddy:latest
-    ports: '80:80'
+    ports:
+      - '80:80'
     configs:
       - source: caddy
         target: /etc/caddy/Caddyfile
+    volumes:
+      - static:/srv/static
     develop:
       watch:
         - action: sync+restart
@@ -69,5 +88,10 @@ services:
           target: /etc/caddy/Caddyfile
 volumes:
   astro_modules:
+  postgres_data:
   cms_modules:
   cms_build:
+  static:
+configs:
+  caddy:
+    file: ./Caddyfile

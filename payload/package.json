@@ -1,33 +1,33 @@
 {
-  "name": "@saewiam/saeshop-payload",
-  "version": "0.0.0",
-  "description": "Payload CMS configuration library for saeshop",
-  "license": "MIT",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
-    "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint ."
-  },
-  "exports": {
-      "./config": "./src/payload.config.ts",
-      "./types": "./src/payload-types.ts"
-  },
-  "dependencies": {
-    "@payloadcms/db-mongodb": "3.84.1",
-    "@payloadcms/plugin-nested-docs": "^3.84.1",
-    "@payloadcms/richtext-lexical": "3.84.1",
-    "typescript": "5.7.3",
-    "payload": "3.84.1"
-  },
-  "devDependencies": {
-    "@types/node": "22.19.9",
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3",
-    "eslint": "^9.16.0",
-    "prettier": "^3.4.2"
-  },
-  "engines": {
-    "node": "^18.20.2 || >=20.9.0"
-  }
+    "name": "@saewiam/saeshop-payload",
+    "version": "0.0.0",
+    "description": "Payload CMS configuration library for saeshop",
+    "license": "MIT",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "generate:types": "payload generate:types",
+        "lint": "eslint .",
+        "payload": "payload"
+    },
+    "exports": {
+        "./config": "./src/payload.config.ts",
+        "./types": "./src/payload-types.ts"
+    },
+    "dependencies": {
+        "@payloadcms/db-postgres": "^3.84.1",
+        "payload": "3.84.1",
+        "typescript": "5.7.3"
+    },
+    "devDependencies": {
+        "@types/node": "22.19.9",
+        "@types/react": "19.2.14",
+        "@types/react-dom": "19.2.3",
+        "eslint": "^9.16.0",
+        "prettier": "^3.4.2",
+        "typescript-eslint": "^8.59.4"
+    },
+    "engines": {
+        "node": "^18.20.2 || >=20.9.0"
+    }
 }
