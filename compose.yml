@@ -54,7 +54,7 @@ services:
           path: ./frontend/package.json
     volumes:
       - astro_modules:/app/node_modules
-    command: sh -c "npm run dev -- --host --port 80"
+    command: sh -c "npm run dev -- --host --port 3000"
     env_file: "./payload/development.env"
     depends_on:
       cms:

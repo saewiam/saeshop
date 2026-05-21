@@ -1,7 +1,9 @@
 {
-  "name": "astro-payload-template",
+  "name": "@saewiam/saeshop-frontend",
+  "description": "Astro frontend for saewiam's shop website, powered by Cloudflare",
+  "private": true,
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -9,16 +11,20 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "generate-types": "wrangler types"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.5.2",
+    "@astrojs/cloudflare": "^13.5.3",
     "@saewiam/saeshop-payload": "file:../payload",
     "astro": "^6.1.10"
   },
   "devDependencies": {
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
-    "wrangler": "^4.92.0"
+    "wrangler": "^4.93.0"
+  },
+  "overrides": {
+    "vite": "^7"
   }
 }

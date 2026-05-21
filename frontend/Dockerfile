@@ -1,4 +1,4 @@
-FROM node:25-alpine AS base
+FROM node:25-slim AS base
 
 
 FROM base AS deps

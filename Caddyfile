@@ -3,7 +3,7 @@
 }
 
 http://saeshop.localhost {
-    reverse_proxy frontend:80
+    reverse_proxy frontend:3000
 }
 http://admin.saeshop.localhost {
     reverse_proxy cms:3000
