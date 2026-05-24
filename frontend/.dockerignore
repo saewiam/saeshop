@@ -1,4 +1,6 @@
 dist/
 .astro/
 **/node_modules/
+.wrangler/
+.vscode/
 npm-debug.log*

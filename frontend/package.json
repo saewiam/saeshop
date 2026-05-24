@@ -15,11 +15,14 @@
     "generate-types": "wrangler types"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.5.3",
+    "@astrojs/cloudflare": "^13.5.4",
     "@saewiam/saeshop-payload": "file:../payload",
-    "astro": "^6.1.10"
+    "@stripe/stripe-js": "^9.6.0",
+    "astro": "^6.1.10",
+    "stripe": "^22.1.1"
   },
   "devDependencies": {
+    "@types/node": "^25.9.1",
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
     "wrangler": "^4.93.0"

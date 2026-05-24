@@ -1,5 +1,7 @@
 FROM node:25-slim AS base
 
+RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
+
 
 FROM base AS deps
 
