@@ -17,7 +17,6 @@ stop:
 		--env-file payload/development.env \
 		down --remove-orphans
 restart: stop start
-cleanstart: clean start
 clean:
 	docker compose \
 		--env-file postgres/development.env \

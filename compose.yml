@@ -10,7 +10,6 @@ services:
     volumes:
       - static:/app/static
       - cms_build:/app/.next
-      - cms_modules:/app/node_modules
     command: sh -c "npm run dev"
     develop:
       watch:
@@ -52,8 +51,6 @@ services:
           initial_sync: true
         - action: rebuild
           path: ./frontend/package.json
-    volumes:
-      - astro_modules:/app/node_modules
     command: sh -c "npm run dev -- --host --port 3000"
     env_file: "./payload/development.env"
     depends_on:
@@ -94,9 +91,7 @@ services:
           path: ./Caddyfile
           target: /etc/caddy/Caddyfile
 volumes:
-  astro_modules:
   postgres_data:
-  cms_modules:
   cms_build:
   static:
 configs:
