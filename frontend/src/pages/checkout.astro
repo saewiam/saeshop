@@ -1,37 +1,71 @@
 ---
+export const prerender = false
 
+import DefaultLayout from '../layouts/DefaultLayout.astro'
 ---
 
 <script>
-    import { loadStripe } from '@stripe/stripe-js'
+    import {
+        loadStripe,
+        type StripeCheckoutLoadActionsSuccess,
+    } from '@stripe/stripe-js'
     import { STRIPE_PUBLISHABLE_KEY } from 'astro:env/client'
     const stripe = (await loadStripe(STRIPE_PUBLISHABLE_KEY))!
 
-    const clientSecret = fetch('/create-checkout-session', { method: 'POST' })
-        .then((response) => response.json())
-        .then((json) => json.client_secret)
+    const clientSecretPromise = fetch('/create-checkout-session', {
+        method: 'POST',
+    })
+        .then((r) => r.json())
+        .then((r) => r.client_secret)
 
-    const checkout = stripe.initCheckoutElementsSdk({ clientSecret })
-    const loadActionsResult = await checkout.loadActions()
+    const checkout = stripe.initCheckoutElementsSdk({
+        clientSecret: clientSecretPromise,
+    })
 
-    if (loadActionsResult.type === 'success') {
-        const session = loadActionsResult.actions.getSession()
-        const checkoutContainer = document.getElementById('checkout-container')!
+    let actions: StripeCheckoutLoadActionsSuccess
 
-        checkoutContainer.append(JSON.stringify(session.lineItems, null, 2))
-        checkoutContainer.append(document.createElement('br'))
-        checkoutContainer.append(`Total: ${session.total.total.amount}`)
+    checkout.loadActions().then((result) => {
+        if (result.type === 'success') {
+            actions = result.actions
+            const session = actions.getSession()
+            document.querySelector('#button-text')!.textContent = `Pay ${
+                session.total.total.amount
+            } now`
+        } else throw 'Could not load checkout actions'
+    })
+    const contactDetailsElement = checkout.createContactDetailsElement()
+    contactDetailsElement.mount('#contact-details-element')
+
+    const paymentElement = checkout.createPaymentElement()
+    paymentElement.mount('#payment-element')
+    async function handleSubmit(e: any) {
+        e.preventDefault()
+        const { type } = await actions.confirm()
+        if (type === 'error') {
+            // handle error here, we only reach this point if checkout failed
+            // otherwise the user is just redirected
+        }
     }
+    document
+        .querySelector('#payment-form')!
+        .addEventListener('submit', handleSubmit)
 </script>
 
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Checkout</title>
-        <script src="https://js.stripe.com/dahlia/stripe.js"></script>
-    </head>
-    <body>
-        <div id="checkout-container"></div>
-    </body>
-</html>
+<DefaultLayout>
+    <script slot="head" is:inline src="https://js.stripe.com/dahlia/stripe.js"
+    ></script>
+    <form id="payment-form">
+        <div id="contact-details-element">
+            <!--Stripe.js injects the Contact Details Element-->
+        </div>
+        <h4>Payment</h4>
+        <div id="payment-element">
+            <!--Stripe.js injects the Payment Element-->
+        </div>
+        <button id="submit">
+            <div class="spinner hidden" id="spinner"></div>
+            <span id="button-text">Pay now</span>
+        </button>
+        <div id="payment-message" class="hidden"></div>
+    </form>
+</DefaultLayout>

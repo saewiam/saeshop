@@ -34,10 +34,24 @@ export const Product: CollectionConfig = {
             required: false,
             fields: [
                 {
-                    name: 'typeName',
+                    name: 'name',
                     type: 'text',
                 },
-                price,
+                {
+                    name: 'usesDefaultPrice',
+                    type: 'checkbox',
+                    defaultValue: true,
+                },
+                {
+                    ...price,
+                    defaultValue: 0.0,
+                    required: false,
+                    admin: {
+                        condition: (siblingData) => {
+                            return !siblingData.usesDefaultPrice
+                        },
+                    },
+                },
                 images,
             ],
         },

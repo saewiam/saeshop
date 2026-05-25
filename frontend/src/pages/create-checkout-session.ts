@@ -1,10 +1,13 @@
-export const prerender = false
-
 import { STRIPE_SECRET_KEY } from 'astro:env/server'
 import StripeClient from 'stripe'
 
+const stripe = new StripeClient(STRIPE_SECRET_KEY)
+
 export async function POST() {
-    const stripe = new StripeClient(STRIPE_SECRET_KEY)
+    /*
+     * TODO: This function should take some cart data from the client and turn
+     * it into a matching checkout session with the products in the user's cart
+     */
 
     const session = await stripe.checkout.sessions.create({
         ui_mode: 'elements',

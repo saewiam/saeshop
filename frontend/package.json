@@ -16,9 +16,15 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.5.4",
+    "@astrojs/react": "^5.0.5",
     "@saewiam/saeshop-payload": "file:../payload",
+    "@stripe/react-stripe-js": "^6.4.0",
     "@stripe/stripe-js": "^9.6.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
     "astro": "^6.1.10",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "stripe": "^22.1.1"
   },
   "devDependencies": {
